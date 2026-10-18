@@ -31,19 +31,25 @@ cd ~/portfolio && docker compose exec -T mongo mongorestore --gzip --archive --d
 ```
 
 ## 4. SSL сертификат
-Бусад subdomain-ууд ямар аргаар сертификат авсныг шалгана (1-р алхмын mount-уудаас `/etc/letsencrypt` хайна).
-Certbot-оор (nginx-ийн `/.well-known/acme-challenge/` нь `/var/www/certbot`-д mount хийгдсэн бол):
+Port 80-ийн нийтлэг блок ACME шалгалтыг дамжуулдаг тул nginx-д хүрэх шаардлагагүй:
 ```bash
-certbot certonly --webroot -w <certbot webroot хавтас> -d yesuvd.tech -d www.yesuvd.tech
+docker run --rm -v fx_certbot-conf:/etc/letsencrypt -v fx_certbot-www:/var/www/certbot \
+  certbot/certbot certonly --webroot -w /var/www/certbot -d yesuvd.tech -d www.yesuvd.tech
 ```
-Эсвэл nginx-ийг түр зогсоогоод: `certbot certonly --standalone -d yesuvd.tech -d www.yesuvd.tech`
 
-## 5. Nginx тохиргоо
-`deploy/yesuvd.tech.conf`-ийг nginx-ийн conf.d хавтаст хуулна (1-р алхмаас олсон замаар):
+## 5. Nginx template (fx төсөлд)
 ```bash
-cp deploy/yesuvd.tech.conf <nginx conf.d хавтас>/
-docker exec fx-nginx-1 nginx -t && docker exec fx-nginx-1 nginx -s reload
+cp deploy/portfolio.conf.template /opt/fx/nginx/templates/
+cd /opt/fx && cp docker-compose.yml docker-compose.yml.bak && cp .env .env.bak
+sed -i 's/^\( *\)MY_DOMAIN: \${MY_DOMAIN:-}$/&\n\1PORTFOLIO_DOMAIN: ${PORTFOLIO_DOMAIN:-}/' docker-compose.yml
+sed -i 's/NGINX_ENVSUBST_FILTER: TLS_DOMAIN|ALGO_DOMAIN|MY_DOMAIN$/&|PORTFOLIO_DOMAIN/' docker-compose.yml
+sed -i 's#^\( *\)- ./nginx/templates/\${MY_TEMPLATE:-none}.conf.template:/etc/nginx/templates/40-my.conf.template:ro$#&\n\1- ./nginx/templates/${PORTFOLIO_TEMPLATE:-none}.conf.template:/etc/nginx/templates/50-portfolio.conf.template:ro#' docker-compose.yml
+printf 'PORTFOLIO_DOMAIN=yesuvd.tech\nPORTFOLIO_TEMPLATE=portfolio\n' >> .env
+diff docker-compose.yml.bak docker-compose.yml        # 3 мөр нэмэгдсэн байх ёстой
+docker compose run --rm --no-deps nginx nginx -t      # ажиллаж буй nginx-д хүрэхгүйгээр шалгана
+docker compose up -d nginx                            # зөвхөн nginx дахин үүснэ (1–2 сек)
 ```
+Буцаах: `cp docker-compose.yml.bak docker-compose.yml && cp .env.bak .env && docker compose up -d nginx`
 
 ## Шинэчлэх
 ```bash
