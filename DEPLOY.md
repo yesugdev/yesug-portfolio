@@ -16,6 +16,7 @@ docker inspect fx-nginx-1 --format '{{range .Mounts}}{{.Source}} -> {{.Destinati
 ```bash
 cd ~ && git clone https://github.com/yesugdev/yesug-portfolio.git portfolio && cd portfolio
 cp .env.example .env && nano .env      # ADMIN_PASSWORD, PROXY_NETWORK-оо засна
+docker volume create portfolio_mongo-data   # өгөгдлийн volume (нэг удаа)
 docker compose up -d --build
 docker compose ps                        # app, mongo хоёулаа healthy болно
 ```
@@ -60,3 +61,33 @@ cd ~/portfolio && git pull && docker compose up -d --build
 ```bash
 docker compose exec -T mongo mongodump --gzip --archive > backup-$(date +%F).archive
 ```
+
+## Аюулгүй ажиллагаа
+
+Энэ сервер дээр олон төсөл нэг nginx-ийг хуваалцдаг. Дараах командуудыг **хэзээ ч бүү ажиллуул**:
+
+| Команд | Юу болох вэ |
+|---|---|
+| `docker system prune -a --volumes` | Зогссон container-ийн volume (өгөгдөл) устна |
+| `docker volume prune` / `docker volume rm ...` | MongoDB-ийн өгөгдөл устна |
+| `docker rm -f fx-nginx-1` | Бүх subdomain зогсоно |
+| `/opt/fx` дотор `docker compose down` | fx болон nginx зогсож, бүх сайт унана |
+
+Аюулгүй командууд:
+
+- Portfolio шинэчлэх: `cd ~/portfolio && git pull && docker compose up -d --build`. Зөвхөн portfolio дахин асна.
+- Nginx-ийн тохиргоо өөрчлөх: эхлээд `docker exec fx-nginx-1 nginx -t`, амжилттай бол `docker exec fx-nginx-1 nginx -s reload`. Container-ийг дахин үүсгэхгүй.
+- `docker compose down -v` ч portfolio-гийн өгөгдлийг устгахгүй. Volume нь `external` тул гараар `docker volume rm` хийхгүй бол үлдэнэ.
+
+Nginx-ийн тохиргоо (learn, portfolio) `/opt/fx/docker-compose.yml`-д mount хийгдсэн тул nginx дахин үүссэн ч алга болохгүй. Шинэ сайт нэмэхдээ ч container руу `docker cp` хийлгүй, ижил аргаар mount нэмнэ.
+
+### Өдөр тутмын нөөц
+```bash
+mkdir -p /root/backups/portfolio
+(crontab -l 2>/dev/null; echo "0 3 * * * /root/portfolio/deploy/backup.sh >> /root/backups/portfolio/backup.log 2>&1") | crontab -
+/root/portfolio/deploy/backup.sh      # одоо нэг удаа туршина
+```
+Сэргээх: `docker compose exec -T mongo mongorestore --gzip --archive --drop < /root/backups/portfolio/<файл>.archive`
+
+Сервер бүхэлдээ эвдэрвэл нөөц алга болно. Тиймээс сард нэг удаа компьютер руугаа татаж аваарай:
+`scp -r root@SERVER_IP:/root/backups/portfolio ./`

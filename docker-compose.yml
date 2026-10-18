@@ -32,4 +32,8 @@ networks:
     name: ${PROXY_NETWORK:-fx_default}
 
 volumes:
+  # external: "docker compose down -v" ч энэ volume-ийг устгахгүй.
+  # Анх удаа: docker volume create portfolio_mongo-data
   mongo-data:
+    external: true
+    name: portfolio_mongo-data
