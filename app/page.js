@@ -3,6 +3,7 @@ import { getProfile } from "@/lib/profile";
 import ContactForm from "./contact-form";
 import Typewriter from "./typewriter";
 import Header from "./header";
+import Projects from "./projects";
 import { Pin, Mail, Phone, Code, Link, File } from "./icons";
 
 export const dynamic = "force-dynamic";
@@ -74,27 +75,7 @@ export default async function Home() {
           {projects.length > 0 && (
             <section id="projects" data-reveal>
               <h2>Төслүүд</h2>
-              <div className="projects">
-                {projects.map((p) => (
-                  <article key={p._id} className={p.featured ? "project featured" : "project"} data-reveal>
-                    {p.image && <div className="project-img"><img src={p.image} alt={p.title} loading="lazy" /></div>}
-                    <div>
-                      <h3>
-                        {p.link ? <a href={p.link} {...ext}>{p.title}</a> : p.title}
-                        {p.featured && <span className="pill">Онцлох</span>}
-                      </h3>
-                      {p.description && <div className="prose">{p.description}</div>}
-                      {p.tech?.length > 0 && <p className="muted small">{p.tech.join(" · ")}</p>}
-                      {(p.link || p.github) && (
-                        <p className="small project-links">
-                          {p.link && <a href={p.link} {...ext}>Demo ↗</a>}
-                          {p.github && <a href={p.github} {...ext}>Source ↗</a>}
-                        </p>
-                      )}
-                    </div>
-                  </article>
-                ))}
-              </div>
+              <Projects items={projects.map(({ createdAt, ...p }) => p)} />
             </section>
           )}
 

@@ -111,6 +111,28 @@ h3 a { color: var(--link); }
 .project p, .project .prose { margin-bottom: 6px; }
 .project-links { display: flex; gap: 16px; }
 
+/* Project grid, filters */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.filters button { font: inherit; font-size: 0.85rem; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); background: #fff; color: var(--text); cursor: pointer; transition: all 0.2s; }
+.filters button span { color: var(--muted); font-size: 0.75rem; margin-left: 2px; }
+.filters button:hover { border-color: var(--accent); color: var(--accent); }
+.filters button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.filters button.active span { color: #dbeafe; }
+.projects + .project-grid { margin-top: 20px; }
+.project-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.card-sm { display: flex; flex-direction: column; background: var(--tint); border: 1px solid var(--border); border-top: 3px solid var(--accent-2); border-radius: 6px; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s; }
+.card-sm:hover { transform: translateY(-3px); box-shadow: 0 10px 30px -12px rgba(37, 99, 235, 0.25); }
+.card-sm .project-img { border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
+.card-sm .project-img img { aspect-ratio: 16 / 9; }
+.card-sm:hover .project-img img { transform: scale(1.05); }
+.card-sm .card-body { padding: 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.card-sm .card-body p, .card-sm .prose { margin: 0; }
+.card-sm .project-links { margin-top: auto; padding-top: 4px; }
+.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.95rem; }
+.more-wrap { display: flex; justify-content: center; margin-top: 24px; }
+.appear { animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) { .appear { animation: none; } }
+
 /* Timeline */
 .timeline { list-style: none; border-left: 2px solid var(--border); margin-left: 6px; }
 .timeline li { position: relative; padding: 0 0 24px 22px; }
@@ -180,6 +202,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); box-sh
   .author-links { flex-direction: row; flex-wrap: wrap; gap: 8px 18px; width: 100%; }
   .masthead nav { gap: 16px; font-size: 0.85rem; }
   .project { grid-template-columns: 1fr; }
+  .project-grid { grid-template-columns: 1fr; }
   h1 { font-size: 1.5rem; }
   .about-page { grid-template-columns: 1fr; gap: 28px; padding-top: 28px; }
   .about-photo { position: static; max-width: 260px; }
